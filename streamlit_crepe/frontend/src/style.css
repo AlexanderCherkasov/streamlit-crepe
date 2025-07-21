@@ -1,0 +1,82 @@
+/* Minimal Streamlit Crepe Component Styles - No overrides */
+.crepe-container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  position: relative;
+  /* Allow dropdowns to overflow container */
+  overflow: visible;
+}
+
+.crepe-editor {
+  width: 100%;
+}
+
+/* Ensure proper box sizing */
+.crepe-container *,
+.crepe-container *::before,
+.crepe-container *::after {
+  box-sizing: border-box;
+}
+
+/* Auto height mode - let content determine height, no scrollbars */
+.crepe-container[data-auto-height="true"] {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+.crepe-container[data-auto-height="true"] .crepe-editor {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+.crepe-container[data-auto-height="true"] .milkdown {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+.crepe-container[data-auto-height="true"] .ProseMirror {
+  overflow: visible !important;
+  height: auto !important;
+}
+
+/* Fixed height mode - enable scrolling for content but allow dropdowns to overflow */
+.crepe-container[data-auto-height="false"] {
+  /* Don't clip dropdowns */
+  overflow: visible;
+}
+
+.crepe-container[data-auto-height="false"] .crepe-editor {
+  /* Only the editor content should scroll */
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+/* Ensure dropdowns and tooltips have high z-index */
+.crepe-container .milkdown-menu,
+.crepe-container .milkdown-tooltip,
+.crepe-container [data-tooltip],
+.crepe-container .crepe-toolbar-dropdown,
+.crepe-container .crepe-dropdown,
+.crepe-container .dropdown-menu {
+  z-index: 9999 !important;
+  position: absolute !important;
+}
+
+/* Fix for Milkdown Crepe specific dropdown classes */
+.crepe-container .crepe-block-menu,
+.crepe-container .crepe-slash-menu,
+.crepe-container .crepe-link-tooltip,
+.crepe-container .crepe-table-tooltip {
+  z-index: 9999 !important;
+  position: absolute !important;
+}
+
+/* Ensure the editor wrapper doesn't clip positioned elements */
+.crepe-container .milkdown {
+  position: relative;
+  overflow: visible !important;
+}
+
+.crepe-container .ProseMirror {
+  position: relative;
+}

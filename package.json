@@ -1,0 +1,23 @@
+{
+  "name": "streamlit-crepe",
+  "version": "1.0.0",
+  "description": "Milkdown Crepe editor for Streamlit. This component integrates Milkdown Crepe Markdown editor into Streamlit applications.",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexanderCherkasov/streamlit-crepe.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AlexanderCherkasov/streamlit-crepe/issues"
+  },
+  "homepage": "https://github.com/AlexanderCherkasov/streamlit-crepe#readme"
+}
