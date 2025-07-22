@@ -19,9 +19,9 @@ async function compressImageFast(file: File): Promise<File> {
             quality: 0.8,            // 80% quality
             initialQuality: 0.8,     // Initial quality
         };
-        
+
         const compressedFile = await imageCompression(file, options);
-        
+
         return compressedFile;
     } catch (error) {
         console.error('Compression failed, using original:', error);
@@ -91,7 +91,7 @@ function CrepeEditor({ args }: ComponentProps): ReactElement {
                                     try {
                                         // Always compress for better performance (max 800px, 500KB)
                                         const compressedFile = await compressImageFast(file);
-                                        
+
                                         // Convert to base64 asynchronously
                                         const base64Data = await new Promise<string>((resolve, reject) => {
                                             const reader = new FileReader();
@@ -102,10 +102,10 @@ function CrepeEditor({ args }: ComponentProps): ReactElement {
 
 
                                         return base64Data;
-                                        
+
                                     } catch (error) {
                                         console.error('Image processing failed:', error);
-                                        
+
                                         // Return placeholder with error
                                         return `data:image/svg+xml;base64,${btoa(`
                                             <svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
@@ -125,12 +125,23 @@ function CrepeEditor({ args }: ComponentProps): ReactElement {
 
                     crepeRef.current = crepe;
 
+                    // Note: We handle line break conversion in handleContentChange instead
+                    // of trying to configure Crepe's internal markdown serialization
+
 
 
                     // Set up content change listener
                     handleContentChange = () => {
                         try {
-                            const markdown = crepe.getMarkdown();
+                            let markdown = crepe.getMarkdown();
+
+                            // Clean up various forms of HTML line breaks that might appear
+                            markdown = markdown
+                                .replace(/<br\s*\/?>/gi, '\n')  // Replace <br/> and <br> with \n
+                                .replace(/&nbsp;/gi, ' ')       // Replace non-breaking spaces
+                                .replace(/\r\n/g, '\n')         // Normalize Windows line endings
+                                .replace(/\r/g, '\n');          // Normalize Mac line endings
+
                             if (markdown !== currentValue.current) {
                                 currentValue.current = markdown;
                                 debouncedSetComponentValue.current(markdown);
