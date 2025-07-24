@@ -15,6 +15,7 @@ readonly = st.sidebar.checkbox("Read-only", value=False)
 # Auto height setting
 auto_height = st.sidebar.checkbox("Auto height (use content height)", value=True)
 height = None if auto_height else st.sidebar.slider("Editor height", min_value=200, max_value=800, value=600, step=50)
+min_height = st.sidebar.slider("Min height (auto mode only)", min_value=200, max_value=800, value=400, step=50) if auto_height else 400
 throttle_delay = st.sidebar.slider("Throttle Delay (ms)", min_value=100, max_value=2000, value=500, step=50)
 
 # Feature toggles
@@ -71,9 +72,14 @@ $
 ### Images
 
 Upload images using the image button in the toolbar - they will be embedded as base64 directly in the markdown!
+
+### Placeholder Text
+
+The editor supports custom placeholder text that appears when empty. You can configure it via the `placeholder` parameter.
 """,
-        placeholder="Start typing...",
+        placeholder="Start writing your note here...",
         height=height,
+        min_height=min_height,
         readonly=readonly,
         features=features,
         throttle_delay=throttle_delay,

@@ -38,7 +38,7 @@ function CrepeEditor({ args }: ComponentProps): ReactElement {
     const debouncedSetComponentValue = useRef(
         debounce((markdown: string) => {
             Streamlit.setComponentValue(markdown);
-        }, args.throttle_delay || 500)
+        }, args.throttle_delay || 250)
     );
 
     // Update debounced function when throttle_delay changes
@@ -46,7 +46,7 @@ function CrepeEditor({ args }: ComponentProps): ReactElement {
         debouncedSetComponentValue.current.cancel();
         debouncedSetComponentValue.current = debounce((markdown: string) => {
             Streamlit.setComponentValue(markdown);
-        }, args.throttle_delay || 500);
+        }, args.throttle_delay || 250);
     }, [args.throttle_delay]);
 
     useEffect(() => {
@@ -68,7 +68,7 @@ function CrepeEditor({ args }: ComponentProps): ReactElement {
 
                     const crepe = new Crepe({
                         root: editorRef.current!,
-                        defaultValue: args.default_value || '# Hello, Crepe!\n\nStart writing your markdown...',
+                        defaultValue: args.default_value,
                         features: {
                             // ONLY enable features that are explicitly turned on
                             [Crepe.Feature.CodeMirror]: features.codeblock === true,
@@ -83,6 +83,65 @@ function CrepeEditor({ args }: ComponentProps): ReactElement {
                             [Crepe.Feature.Toolbar]: true, // Always show toolbar
                         },
                         featureConfigs: {
+                            // Configure Placeholder text
+                            [Crepe.Feature.Placeholder]: {
+                                text: args.placeholder || 'Start writing...',
+                                mode: 'block', // Show placeholder as block text
+                            },
+
+                            // Configure Toolbar to hide code button when codeblock is disabled
+                            [Crepe.Feature.Toolbar]: features.codeblock === false ? {
+                                codeIcon: null, // Hide code button when codeblock is disabled
+                            } : undefined,
+
+                            // Configure BlockEdit to customize slash menu based on user preferences
+                            [Crepe.Feature.BlockEdit]: {
+                                buildMenu: (builder: any) => {
+                                    // Always build custom menu to control what appears
+                                    builder.addGroup('Text', (group: any) => {
+                                        group
+                                            .addItem('Text', 'slashMenuTextIcon', () => 'paragraph')
+                                            .addItem('Heading 1', 'slashMenuH1Icon', () => 'heading1')
+                                            .addItem('Heading 2', 'slashMenuH2Icon', () => 'heading2')
+                                            .addItem('Heading 3', 'slashMenuH3Icon', () => 'heading3');
+                                    });
+
+                                    builder.addGroup('Lists', (group: any) => {
+                                        group
+                                            .addItem('Bullet List', 'slashMenuBulletListIcon', () => 'bulletList')
+                                            .addItem('Ordered List', 'slashMenuOrderedListIcon', () => 'orderedList')
+                                            .addItem('Task List', 'slashMenuTaskListIcon', () => 'taskList');
+                                    });
+
+                                    // Only add advanced features that are explicitly enabled
+                                    const advancedItems = [];
+                                    if (features.image === true) {
+                                        advancedItems.push({ name: 'Image', icon: 'slashMenuImageIcon', action: () => 'image' });
+                                    }
+                                    if (features.table === true) {
+                                        advancedItems.push({ name: 'Table', icon: 'slashMenuTableIcon', action: () => 'table' });
+                                    }
+                                    if (features.math === true) {
+                                        advancedItems.push({ name: 'Math', icon: 'slashMenuMathIcon', action: () => 'math' });
+                                    }
+                                    // Only add Code Block if explicitly enabled
+                                    if (features.codeblock === true) {
+                                        advancedItems.push({ name: 'Code Block', icon: 'slashMenuCodeBlockIcon', action: () => 'codeblock' });
+                                    }
+
+                                    // Only create Advanced group if there are items to add
+                                    if (advancedItems.length > 0) {
+                                        builder.addGroup('Advanced', (group: any) => {
+                                            advancedItems.forEach(item => {
+                                                group.addItem(item.name, item.icon, item.action);
+                                            });
+                                        });
+                                    }
+
+                                    return builder;
+                                }
+                            },
+
                             // Configure ImageBlock with fast compression and async processing
                             [Crepe.Feature.ImageBlock]: features.image === true ? {
                                 onUpload: async (file: File) => {
@@ -289,12 +348,23 @@ function CrepeEditor({ args }: ComponentProps): ReactElement {
             // Fixed height mode
             Streamlit.setFrameHeight(args.height);
         } else {
-            // Auto height mode - let Streamlit calculate automatically
-            Streamlit.setFrameHeight();
+            // Auto height mode with min_height support
+            const minHeight = args.min_height || 400;
+            
+            const updateHeight = () => {
+                if (editorRef.current) {
+                    const contentHeight = editorRef.current.scrollHeight;
+                    const finalHeight = Math.max(contentHeight, minHeight);
+                    Streamlit.setFrameHeight(finalHeight);
+                }
+            };
+
+            // Initial height setting
+            updateHeight();
 
             // Set up ResizeObserver to watch for content changes
             const ro = new ResizeObserver(() => {
-                Streamlit.setFrameHeight();
+                updateHeight();
             });
 
             if (editorRef.current) {
@@ -303,11 +373,12 @@ function CrepeEditor({ args }: ComponentProps): ReactElement {
 
             return () => ro.disconnect();
         }
-    }, [args.height]);
+    }, [args.height, args.min_height]);
 
 
 
     const isAutoHeight = !args.height;
+    const minHeight = args.min_height || 400;
 
     return (
         <div
@@ -315,6 +386,7 @@ function CrepeEditor({ args }: ComponentProps): ReactElement {
             data-auto-height={isAutoHeight ? "true" : "false"}
             style={{
                 height: isAutoHeight ? 'auto' : args.height,
+                minHeight: isAutoHeight ? minHeight : undefined,
                 border: '1px solid #e1e5e9',
                 borderRadius: '8px',
                 overflow: 'visible', // Always allow dropdowns to overflow
@@ -328,6 +400,7 @@ function CrepeEditor({ args }: ComponentProps): ReactElement {
                 className="crepe-editor"
                 style={{
                     height: isAutoHeight ? 'auto' : '100%',
+                    minHeight: isAutoHeight ? minHeight : undefined,
                     width: '100%',
                     overflow: isAutoHeight ? 'visible' : 'auto', // Allow scrolling only for content in fixed height mode
                 }}

@@ -33,7 +33,7 @@ content = st_milkdown(
         "codeblock": True, # Code blocks
         "link": True       # Link editing
     },
-    height=400
+    min_height=300
 )
 ```
 
@@ -95,6 +95,7 @@ else:
 def st_milkdown(
     default_value: str = "",
     height: Optional[int] = None,
+    min_height: int = 400,
     placeholder: str = "",
     readonly: bool = False,
     features: Optional[Dict[str, bool]] = None,
@@ -120,6 +121,10 @@ def st_milkdown(
     height : int, optional
         Fixed height of the editor in pixels. If None, the editor will
         automatically adjust its height based on content.
+        
+    min_height : int, default 400
+        Minimum height of the editor in pixels. Only applies when height is None
+        (auto-height mode). Ensures the editor has a minimum usable size.
         
     placeholder : str, default ""
         Placeholder text shown when the editor is empty.
@@ -169,7 +174,7 @@ def st_milkdown(
     ...         "codeblock": True, # Enable code blocks
     ...         "link": True       # Enable link editing
     ...     },
-    ...     height=400,
+    ...     min_height=300,
     ...     placeholder="Start writing your markdown..."
     ... )
     
@@ -206,6 +211,7 @@ def st_milkdown(
     component_value = _component_func(
         default_value=default_value,
         height=height,
+        min_height=min_height,
         placeholder=placeholder,
         readonly=readonly,
         features=features,
